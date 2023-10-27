@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Taken from: https://youtrack.jetbrains.com/issue/PY-35978/Support-conda-with-remote-interpreters
+
+source /usr/wiss/haefner/miniconda3/etc/profile.d/conda.sh
+conda activate psnerf
+python "$@"

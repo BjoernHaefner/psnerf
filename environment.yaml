@@ -6,39 +6,39 @@ channels:
   - anaconda
   - defaults
 dependencies:
-  - python
-  - pytorch=1.8.0 
-  - pytorch-cluster
-  - torchvision 
-  - torchaudio 
+  - python # DONE
+  - pytorch=1.8.0 # DONE
+  - pytorch-cluster # DONE
+  - torchvision  # DONE
+  - torchaudio  # DONE
   - cudatoolkit=11.1
-  - cffi
-  - cython
-  - imageio=2.9.0
-  - numpy
-  - scipy
-  - matplotlib
-  - pandas
-  - tensorboard
-  - yaml
-  - pillow=8.2.0
-  - wheel
+  - cffi  # DONE
+  - cython  # DONE
+  - imageio=2.9.0  # DONE
+  - numpy # DONE
+  - scipy # DONE
+  - matplotlib # DONE
+  - pandas # DONE
+  - tensorboard # DONE
+  - yaml # DONE
+  - pillow=8.2.0 # DONE
+  - wheel # DONE
   - pip
-  - tqdm
+  - tqdm # DONE
   - pip:
-    - ipdb
-    - ipython==7.24.0
-    - ipython-genutils
-    - jedi
-    - opencv-python
-    - scikit-image
-    - pyyaml
-    - trimesh
-    - configargparse
-    - imageio-ffmpeg
-    - GPUtil
-    - pyhocon
-    - tensorboardX
-    - plotly
-    - lpips 
-    - Rtree
+      - ipdb # DONE
+      - ipython==7.24.0 # FAIL: https://anaconda.org/anaconda/ipython (seems to have been installed with ipdb)
+      - ipython-genutils # DONE
+      - jedi # DONE
+      - opencv-python # FREEZE in "Solving environment': https://anaconda.org/conda-forge/opencv -> solve: install with pip: pip install opencv-python
+      - scikit-image # DONE
+      - pyyaml # DONE
+      - trimesh # DONE
+      - configargparse # DONE
+      - imageio-ffmpeg # DONE
+      - GPUtil # DONE
+      - pyhocon # DONE
+      - tensorboardX # DONE
+      - plotly # DONE
+      - lpips # FREEZE in "Solving environment': https://anaconda.org/conda-forge/lpips -> solve: install with pip: pip install lpips
+      - Rtree # DONE

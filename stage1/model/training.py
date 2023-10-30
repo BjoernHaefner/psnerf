@@ -112,6 +112,7 @@ class Trainer(object):
             save_img.append(np.concatenate(img_iter, axis=-2))
         save_img = np.concatenate(save_img, axis=0)
         save_img = Image.fromarray(save_img.astype(np.uint8)).convert("RGB")
+        print(f"Save: {out_render_path}")
         save_img.save(out_render_path)
         self.model.train()
         return 

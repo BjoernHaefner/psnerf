@@ -23,7 +23,7 @@ rendering:
   occ_prob_points: 64
 dataloading:
   obj_name : bear 
-  data_dir: ../dataset/bear
+  data_dir: dataset/bear
   # train_view: 15
   # train_light: 8
   # all_view: True

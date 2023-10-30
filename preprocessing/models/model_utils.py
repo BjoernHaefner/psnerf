@@ -1,6 +1,8 @@
 import os
+
 import torch
 import torch.nn as nn
+
 
 def getInput(args, data):
     input_list = [data['img']]

@@ -2,16 +2,14 @@
 Metrics: PSNR, SSIM, LPIPS, MAE
 require: numpy array
 '''
-import torch
-import torch.nn.functional as F
+import lpips
 import math
 import numpy as np
-from skimage.metrics import structural_similarity
-import lpips
-
+import torch
 import trimesh
 import trimesh.proximity
 import trimesh.sample
+from skimage.metrics import structural_similarity
 
 
 def MAE(vec1, vec2, mask=None, normalize=True):

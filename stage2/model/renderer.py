@@ -1,12 +1,10 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import numpy as np
-
-from utils import rend_util
 from model.embedder import get_embedder
 from model.microfacet import Microfacet
 from model.sgbasis import SGBasis
+from utils import rend_util
 
 act_fns = {
     'relu': F.relu,

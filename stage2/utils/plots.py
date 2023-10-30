@@ -1,14 +1,9 @@
+import matplotlib.pyplot as plt
 import numpy as np
-import plotly.graph_objs as go
 import torch
 import torchvision
-import trimesh
 from PIL import Image
-from skimage import measure
 
-from utils import rend_util
-import os
-import matplotlib.pyplot as plt
 cm = plt.get_cmap('jet')
 
 

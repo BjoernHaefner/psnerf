@@ -1,11 +1,13 @@
-import os
 import argparse
+import os
 import time
+
 import torch
+
 from dataloading import load_config
 from model.checkpoints import CheckpointIO
-from model.network import NeuralNetwork
 from model.extracting import Extractor3D
+from model.network import NeuralNetwork
 
 torch.manual_seed(0)
 

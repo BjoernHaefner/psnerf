@@ -1,14 +1,16 @@
-import datetime, time, os
-import numpy as np
+import datetime
+import json
+import os
+import time
+
+import matplotlib;
 import torch
 import torchvision.utils as vutils
-import scipy.io as sio
-from . import utils
-import json
 
-import matplotlib; matplotlib.use('agg')
+from . import utils
+
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
-from matplotlib import cm
 from matplotlib.font_manager import FontProperties
 fontP = FontProperties()
 fontP.set_size('small')

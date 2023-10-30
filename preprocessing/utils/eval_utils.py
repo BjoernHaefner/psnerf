@@ -1,7 +1,8 @@
-import torch
 import math
 import numpy as np
+import torch
 from matplotlib import cm
+
 
 def colorMap(diff):
     thres = 90

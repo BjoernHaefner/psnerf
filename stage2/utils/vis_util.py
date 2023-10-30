@@ -1,12 +1,10 @@
-import torch
-# import torch.nn as nn
-# import torch.nn.functional as F
+import cv2
+import matplotlib as mpl
 import numpy as np
+import torch
+from matplotlib import cm
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.figure import Figure
-import matplotlib as mpl
-from matplotlib import cm
-import cv2
 
 TINY_NUMBER = 1e-6
 

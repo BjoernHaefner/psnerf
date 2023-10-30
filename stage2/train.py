@@ -1,11 +1,12 @@
-import sys,os
 import argparse
+import os
+import sys
+
 import GPUtil
+from IPython.core import ultratb
 
 from trainer import TrainRunner
 
-import sys
-from IPython.core import ultratb
 sys.excepthook = ultratb.FormattedTB(call_pdb=True)
 
 

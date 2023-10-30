@@ -1,6 +1,8 @@
 import time
-import torch
 from collections import OrderedDict
+
+import torch
+
 
 class Timer(object):
     def __init__(self, cuda_sync=False):

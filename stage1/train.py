@@ -1,11 +1,13 @@
-import os, sys, time
-import logging
 import argparse
-import numpy as np
+import logging
+import os
+import time
 
+import numpy as np
 import torch
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
+
 import dataloading as dl
 import model as mdl
 

@@ -1,13 +1,16 @@
 from __future__ import division
+
+import json
 import os
+from glob import glob
+
 import numpy as np
-from imageio import imread
 import torch
 import torch.utils.data as data
-from glob import glob
-import json
+from imageio import imread
 
-from datasets import pms_transforms
+from preprocessing.datasets.pms_transforms import arrayToTensor, imgSizeToFactorOfK
+
 np.random.seed(0)
 
 
@@ -94,10 +97,10 @@ class UPS_Custom_Dataset(data.Dataset):
 
         downsample = 4 
         for k in item.keys():
-            item[k] = pms_transforms.imgSizeToFactorOfK(item[k], downsample)
+            item[k] = imgSizeToFactorOfK(item[k], downsample)
 
         for k in item.keys(): 
-            item[k] = pms_transforms.arrayToTensor(item[k])
+            item[k] = arrayToTensor(item[k])
 
         item['dirs'] = torch.from_numpy(light_dir).view(-1, 1, 1).float()
         item['ints'] = torch.from_numpy(light_int).view(-1, 1, 1).float()

@@ -1,8 +1,10 @@
 import torch
 import torch.nn as nn
 from torch.nn.init import kaiming_normal_
-from . import model_utils
 from utils import eval_utils
+
+from . import model_utils
+
 
 # Classification
 class FeatExtractor(nn.Module):

@@ -1,14 +1,13 @@
-import os
-import torch
-from .common import (
-    get_tensor_values, sample_patch_points, arange_pixels
-)
 import logging
-from .losses import Loss
+
 import numpy as np
+import torch
+
+from .common import (arange_pixels, get_tensor_values, sample_patch_points)
+from .losses import Loss
+
 logger_py = logging.getLogger(__name__)
 from PIL import Image
-import torch.nn.functional as F
 import matplotlib.pyplot as plt
 cm = plt.get_cmap('jet')
 from utils.tools import MAE

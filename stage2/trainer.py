@@ -1,8 +1,9 @@
+import json
 import os
 import sys
 from datetime import datetime
 
-import imageio
+import math
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -11,10 +12,6 @@ from tensorboardX import SummaryWriter
 
 import utils.general as utils
 import utils.plots as plt
-import math, json
-from glob import glob
-
-# imageio.plugins.freeimage.download()
 
 
 class TrainRunner():

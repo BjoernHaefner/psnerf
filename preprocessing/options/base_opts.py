@@ -1,6 +1,5 @@
 import argparse
-import os
-import torch
+
 
 class BaseOpts(object):
     def __init__(self):

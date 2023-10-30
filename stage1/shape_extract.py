@@ -1,14 +1,14 @@
-import os
-import sys
 import argparse
+import os
+
+import imageio
+import json
 import numpy as np
+import torch
 from tqdm import tqdm
 
-import torch
 import dataloading as dl
 import model as mdl
-import imageio, json
-
 from model.common import arange_pixels
 
 np.random.seed(42)

@@ -1,10 +1,12 @@
-import os
 import logging
-import torch
-from torch.utils import data
+import os
+
+import imageio
+import json
 import numpy as np
-import imageio, json
+import torch
 from scipy import ndimage
+from torch.utils import data
 
 logger = logging.getLogger(__name__)
 

@@ -1,8 +1,10 @@
 # save normalized/averaged lighting images
-from PIL import Image
-import numpy as np
-import os, imageio, json
+import imageio
+import json
+import os
+
 import configargparse
+import numpy as np
 
 parser = configargparse.ArgumentParser()
 parser.add_argument("--obj", type=str, default=None, )

@@ -1,4 +1,6 @@
-import torch, sys
+import sys
+import torch
+
 sys.path.append('.')
 
 from datasets import custom_data_loader

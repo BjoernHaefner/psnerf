@@ -1,10 +1,12 @@
 import os
-import torch
-from models import model_utils
-from utils import eval_utils, time_utils 
+
 import numpy as np
+import torch
 from PIL import Image
-import scipy
+
+from models import model_utils
+from utils import eval_utils, time_utils
+
 
 def get_itervals(args, split):
     if split not in ['train', 'val', 'test']:

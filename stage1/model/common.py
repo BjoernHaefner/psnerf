@@ -1,8 +1,8 @@
-import torch
-import numpy as np
 import logging
 from copy import deepcopy
 
+import numpy as np
+import torch
 
 logger_py = logging.getLogger(__name__)
 

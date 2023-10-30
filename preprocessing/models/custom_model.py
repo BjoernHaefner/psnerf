@@ -1,5 +1,5 @@
 from . import model_utils
-import torch
+
 
 def buildModel(args):
     print('Creating Model %s' % (args.model))

@@ -1,10 +1,9 @@
-import os
+import argparse
+
 import numpy as np
-import json, argparse
 import trimesh
 import trimesh.proximity
 import trimesh.sample
-
 
 # Arguments
 parser = argparse.ArgumentParser(

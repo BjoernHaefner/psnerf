@@ -1,14 +1,16 @@
+import time
+
+import numpy as np
 import torch
 import torch.optim as optim
-from torch import autograd
-from torch.utils.data import TensorDataset, DataLoader
-import numpy as np
 import trimesh
-from utils import libmcubes
-from .common import make_3d_grid
-from utils.libmise import MISE
-import time
 from skimage.morphology import binary_dilation, disk
+from torch import autograd
+from torch.utils.data import DataLoader, TensorDataset
+from utils import libmcubes
+from utils.libmise import MISE
+
+from .common import make_3d_grid
 
 
 #TODO Output masking yes or no

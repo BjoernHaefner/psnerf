@@ -2,8 +2,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from .common import (
-    get_mask, origin_to_world,image_points_to_ray)
+
+from .common import (get_mask, image_points_to_ray, origin_to_world)
 
 epsilon = 1e-6
 class Renderer(nn.Module):

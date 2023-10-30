@@ -1,4 +1,5 @@
-import os,sys
+import os
+
 os.environ["OPENCV_IO_ENABLE_OPENEXR"]="1"
 import argparse
 import GPUtil
@@ -9,10 +10,9 @@ import numpy as np
 from PIL import Image
 
 import utils.general as utils
-import imageio, cv2, json
+import json
 from tqdm import tqdm, trange
 from utils.eval_utils import (load_light, vis_light, gen_light_xyz)
-from scipy.spatial.transform import Rotation as Rotlib
 
 to_img = lambda x: (x.astype(np.float32).clip(0,1) * 255).round().astype(np.uint8)
 to_numpy = lambda x: x.detach().cpu().numpy()

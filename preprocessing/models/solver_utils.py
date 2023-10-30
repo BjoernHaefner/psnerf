@@ -1,6 +1,8 @@
-import torch
 import os
+
+import torch
 from utils import eval_utils
+
 
 class Stage1ClsCrit(object): # First Stage, Light classification criterion
     def __init__(self, args):

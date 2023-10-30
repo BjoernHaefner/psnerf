@@ -1,6 +1,5 @@
-import os 
-import numpy as np
-from imageio import imread, imsave
+import os
+
 
 def makeFile(f):
     if not os.path.exists(f):

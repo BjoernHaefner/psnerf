@@ -1,9 +1,10 @@
+import datetime
 import os
+import shutil
 import urllib
+
 import torch
 from torch.utils import model_zoo
-import shutil
-import datetime
 
 
 class CheckpointIO(object):

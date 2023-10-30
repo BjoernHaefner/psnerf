@@ -1,15 +1,13 @@
-import os
-import sys
 import argparse
+import os
 
 import numpy as np
+import torch
 from PIL import Image
 from tqdm import tqdm
 
-import torch
 import dataloading as dl
 import model as mdl
-
 from model.common import arange_pixels
 
 np.random.seed(42)

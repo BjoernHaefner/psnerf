@@ -1,9 +1,10 @@
+import imageio
+import json
 import os
-import torch
-import numpy as np
-from utils import rend_util
-import json, imageio
 import random
+
+import numpy as np
+import torch
 
 
 class SceneDataset(torch.utils.data.Dataset):

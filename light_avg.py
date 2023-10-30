@@ -1,9 +1,9 @@
 # save normalized/averaged lighting images
-import imageio
 import json
 import os
 
 import configargparse
+import imageio
 import numpy as np
 
 parser = configargparse.ArgumentParser()
@@ -63,8 +63,10 @@ for vi in range(n_view):
         limg = limg*mask[...,None]
         if args.light_intnorm:
             limg = limg/relat_int[idx]
+            print(f"Save: {os.path.join(normalizedir, 'view_{:02d}/{:03d}.png'.format(vi+1,li+1))}")
             imageio.imwrite(os.path.join(normalizedir, 'view_{:02d}/{:03d}.png'.format(vi+1,li+1)), (limg.clip(0,1)*255).round().astype(np.uint8))
         light_img.append(limg)
     light_img_mean = np.mean(light_img,axis=0)
+    print(f"Save: {os.path.join(normalizedir, avgdir,'view_{:02d}.png'.format(vi+1))}")
     imageio.imwrite(os.path.join(normalizedir, avgdir,'view_{:02d}.png'.format(vi+1)), (light_img_mean.clip(0,1)*255).round().astype(np.uint8))
 print()

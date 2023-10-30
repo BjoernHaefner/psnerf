@@ -7,9 +7,8 @@ from glob import glob
 import numpy as np
 import torch
 import torch.utils.data as data
+from datasets.pms_transforms import arrayToTensor, imgSizeToFactorOfK
 from imageio import imread
-
-from preprocessing.datasets.pms_transforms import arrayToTensor, imgSizeToFactorOfK
 
 np.random.seed(0)
 

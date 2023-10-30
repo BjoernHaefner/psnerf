@@ -18,7 +18,8 @@ def SAVE_CALL(cmd: str, args: List[str], dry: bool = False):
     return
 
 
-def preprocessing(obj_name: str):
+def preprocessing(obj_name: str, gpu_id: int):
+    os.environ["CUDA_VISIBLE_DEVICES"] = f"{gpu_id}"
     cmd = f"python preprocessing/test.py"
     args = [
         f"--retrain preprocessing/data/models/LCNet_CVPR2019.pth.tar",
@@ -35,6 +36,8 @@ def light_avg(obj_name: str):
     args = [
         f"--obj {obj_name}",
         f"--path dataset",
+        f"--light_intnorm",
+        f"--sdps",
     ]
     SAVE_CALL(cmd, args)
     return

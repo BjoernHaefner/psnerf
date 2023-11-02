@@ -67,6 +67,7 @@ def plot_micro(gamma, model_out_all ,rgb_gt_all, path, epoch, img_res, model_inp
     tensor = (tensor * scale_factor).astype(np.uint8)
 
     img = Image.fromarray(tensor)
+    print(f"Save: {'{0}/rendering_{1}.png'.format(path_img, epoch)}")
     img.save('{0}/rendering_{1}.png'.format(path_img, epoch))
 
 def lin2img(tensor, img_res):

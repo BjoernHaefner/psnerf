@@ -453,12 +453,16 @@ class TrainRunner():
                         self.writer.add_scalar('light_inten_mean',self.light_inten_para.weight.data.detach().mean().item(), self.cur_iter)
                         self.writer.add_scalar('light_inten',self.light_inten_para(l_slt).mean().item(), self.cur_iter)
 
-
+                if self.cur_iter >= self.max_niters:
+                    break
                 self.cur_iter += 1
 
                 self.sg_scheduler.step()
                 if self.light_decay and self.light_para.weight.requires_grad:
                     self.light_scheduler.step()
+
+            if self.cur_iter >= self.max_niters:
+                break
 
             # clear plot/save files
             freq_list = [xi*5 for xi in range(10)]
@@ -476,6 +480,10 @@ class TrainRunner():
                 pidx = int(fsub.split('.')[0].split('_')[-1])//self.plot_freq 
                 if pidx not in freq_list and pidx%10!=0:
                     os.remove(os.path.join(self.plots_dir, fsub))
+
+        # Save final checkpoint
+        self.save_checkpoints(epoch)
+
 
 
     

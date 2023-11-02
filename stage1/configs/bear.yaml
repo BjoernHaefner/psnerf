@@ -32,7 +32,7 @@ dataloading:
   n_workers: 8
 training:
   type: unisurf
-  out_dir:  out/bear/test_1/
+  out_dir:  out/bear/test_1/ # should always be out/{OBJ_NAME}/test_1
   normal_loss: True
   normal_after: 1000
   normal_angle: 65

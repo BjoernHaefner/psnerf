@@ -1,8 +1,8 @@
 import argparse
+import json
 import os
 
 import imageio
-import json
 import numpy as np
 import torch
 from tqdm import tqdm
@@ -77,6 +77,7 @@ if args.visualize:
 
 f = os.path.join(test_out_path, 'config.yaml')
 with open(f, 'w') as file:
+    print(f"Write: {os.path.realpath(f)} [From: {os.path.join(out_dir, 'config.yaml')}]")
     file.write(open(os.path.join(out_dir, 'config.yaml'), 'r').read())
 
 def process_data_dict(data):
@@ -96,7 +97,7 @@ if args.visibility:
     light_all = [torch.tensor(lli).to(device) for lli in light_pred]
     vis_vd = []
     if args.vis_plus:
-        from torch_cluster import fps
+        from torch_cluster import fps # had to follow: https://github.com/conda-forge/pytorch_sparse-feedstock/issues/21#issuecomment-1056418260
         vis_plus_light = {}
         os.makedirs(os.path.join(test_out_path, 'vis_plus'), exist_ok=True)
 
@@ -145,27 +146,37 @@ for di, data in enumerate(tqdm(test_loader, ncols=120)):
         normal_all = to_numpy(to_hw(torch.cat(normal_pred, dim=1),h,w))
         points_all = to_numpy(to_hw(torch.cat(points_pred, dim=1),h,w))
 
+        print(f"Save: {os.path.join(test_out_path,'points/view_{:02d}.npy'.format(vidx_ori+1))}")
         np.save(os.path.join(test_out_path,'points/view_{:02d}.npy'.format(vidx_ori+1)),points_all.astype(np.float32))
+        print(f"Save: {os.path.join(test_out_path,'normal/view_{:02d}.npy'.format(vidx_ori+1))}")
         np.save(os.path.join(test_out_path,'normal/view_{:02d}.npy'.format(vidx_ori+1)),normal_all.astype(np.float32))
+        print(f"Save: {os.path.join(test_out_path,'mask/view_{:02d}.npy'.format(vidx_ori+1))}")
         np.save(os.path.join(test_out_path,'mask/view_{:02d}.npy'.format(vidx_ori+1)),mask_all.astype(bool))
         if args.visualize:
+            print(f"Save: {os.path.join(test_out_path,'vis_points/view_{:02d}.png'.format(vidx_ori+1))}")
             imageio.imwrite(os.path.join(test_out_path,'vis_points/view_{:02d}.png'.format(vidx_ori+1)),to_img(points_all/2.+0.5))
+            print(f"Save: {os.path.join(test_out_path,'vis_normal/view_{:02d}.png'.format(vidx_ori+1))}")
             imageio.imwrite(os.path.join(test_out_path,'vis_normal/view_{:02d}.png'.format(vidx_ori+1)),to_img(normal_all/2.+0.5))
+            print(f"Save: {os.path.join(test_out_path,'vis_mask/view_{:02d}.png'.format(vidx_ori+1))}")
             imageio.imwrite(os.path.join(test_out_path,'vis_mask/view_{:02d}.png'.format(vidx_ori+1)),to_img(mask_all))
 
         if args.visibility:
             vis_all = to_numpy(torch.cat(vis_pred, dim=1)).reshape(ln_ori,h,w,).transpose(0,2,1)
+            print(f"Save: {os.path.join(test_out_path,'visibility/view_{:02d}.npy'.format(vidx_ori+1))}")
             np.save(os.path.join(test_out_path,'visibility/view_{:02d}.npy'.format(vidx_ori+1)),vis_all.astype(np.float32))
             if args.visualize:
                 vis_vd.append((vis_all*255).round().astype(np.uint8))
             if args.vis_plus:
                 vis_plus_all = to_numpy(torch.cat(vis_plus, dim=1)).reshape(ln_plus,h,w,).transpose(0,2,1)
+                print(f"Save: {os.path.join(test_out_path,'vis_plus/view_{:02d}.npy'.format(vidx_ori+1))}")
                 np.save(os.path.join(test_out_path,'vis_plus/view_{:02d}.npy'.format(vidx_ori+1)),vis_plus_all.astype(np.float32))
                 vis_plus_light[f'view_{vidx_ori+1:02d}'] = to_numpy(pos[index]).astype(np.float32).tolist()
         torch.cuda.empty_cache()
 if args.visibility and args.visualize:
     vis_vd = np.concatenate(vis_vd, axis=0)
+    print(f"Save: {os.path.join(test_out_path,'light_visibility.mp4')}")
     imageio.mimwrite(os.path.join(test_out_path,'light_visibility.mp4'), vis_vd, fps=10, quality=8)
 if args.visibility and args.vis_plus:
     with open(os.path.join(test_out_path,'vis_plus/light_dir.json'),'w') as f0:
+        print(f"Save: {os.path.join(test_out_path,'vis_plus/light_dir.json')}")
         json.dump(vis_plus_light,f0, indent=4)

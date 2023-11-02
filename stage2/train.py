@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--batch_size', type=int, default=1, help='input batch size')
     parser.add_argument('--nepoch', type=int, default=20000, help='number of epochs to train for')
-    parser.add_argument('--max_niter', type=int, default=200001, help='max number of iterations to train for')
+    parser.add_argument('--max_niter', type=int, default=150000, help='max number of iterations to train for')
     parser.add_argument('--is_continue', default=False, action="store_true",
                         help='If set, indicates continuing from a previous run.')
     parser.add_argument('--timestamp', default='latest', type=str,

@@ -23,7 +23,7 @@ rendering:
   occ_prob_points: 64
 dataloading:
   obj_name : bear 
-  data_dir: dataset/bear
+  data_dir: ../dataset/bear
   # train_view: 15
   # train_light: 8
   # all_view: True
@@ -32,7 +32,7 @@ dataloading:
   n_workers: 8
 training:
   type: unisurf
-  out_dir:  out/bear/test_1/ # should always be out/{OBJ_NAME}/test_1
+  out_dir:  out/bear/test_1/ # should always be out/{OBJ_NAME}/test_1 and exactly three directories!
   normal_loss: True
   normal_after: 1000
   normal_angle: 65

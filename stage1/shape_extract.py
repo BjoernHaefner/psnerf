@@ -65,7 +65,7 @@ except FileExistsError:
     load_dict = dict()
 it = load_dict.get('it', 100000)
 
-test_out_path = os.path.join(args.test_out_dir, f"{args.obj_name}/{args.expname}_{args.load_iter if args.load_iter else it}")
+test_out_path = os.path.join(args.test_out_dir, args.obj_name, f"{args.expname}_{args.load_iter if args.load_iter else it}")
 
 for savedir in ['mask', 'points', 'normal']:
     os.makedirs(os.path.join(test_out_path, savedir), exist_ok=True)

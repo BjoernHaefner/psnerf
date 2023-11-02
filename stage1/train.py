@@ -30,7 +30,6 @@ parser.add_argument('--exit-after', type=int, default=100000, #1e5 is paper valu
                          'seconds with exit code 2.')
 
 args = parser.parse_args()
-lz = len(str(int(args.exit_after))) # number of leading zeros for file
 cfg = dl.load_config(args.config)
 os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu)
 # Fix seeds
@@ -133,7 +132,7 @@ while it < args.exit_after:
         if (backup_every > 0 and (it % backup_every) == 0):
             logger_py.info('Backup checkpoint')
             print('Backup checkpoint')
-            checkpoint_io.save(f'model_{it:0{lz}d}.pt', epoch_it=epoch_it, it=it,
+            checkpoint_io.save(f'model_{it}.pt', epoch_it=epoch_it, it=it,
                                loss_val_best=metric_val_best)
         
     scheduler.step()

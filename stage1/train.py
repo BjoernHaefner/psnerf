@@ -25,11 +25,12 @@ parser = argparse.ArgumentParser(
 parser.add_argument('config', type=str, help='Path to config file.')
 parser.add_argument('--no-cuda', action='store_true', help='Do not use cuda.')
 parser.add_argument('--gpu', type=int, help='gpu')
-parser.add_argument('--exit-after', type=int, default=-1,
+parser.add_argument('--exit-after', type=int, default=100000, #1e5 is paper value
                     help='Checkpoint and exit after specified number of '
                          'seconds with exit code 2.')
 
 args = parser.parse_args()
+lz = len(str(int(args.exit_after))) # number of leading zeros for file
 cfg = dl.load_config(args.config)
 os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu)
 # Fix seeds
@@ -95,7 +96,7 @@ logger_py.info('Total number of parameters: %d' % nparameters)
 t0b = time.time()
 
 
-while True:
+while it < args.exit_after:
     epoch_it += 1
 
     for batch in train_loader:
@@ -131,7 +132,12 @@ while True:
         # Backup if necessary
         if (backup_every > 0 and (it % backup_every) == 0):
             logger_py.info('Backup checkpoint')
-            checkpoint_io.save('model_%d.pt' % it, epoch_it=epoch_it, it=it,
+            print('Backup checkpoint')
+            checkpoint_io.save(f'model_{it:0{lz}d}.pt', epoch_it=epoch_it, it=it,
                                loss_val_best=metric_val_best)
         
     scheduler.step()
+
+logger_py.info(f'Saving final checkpoint [{it} iterations]')
+print(f'Saving final checkpoint [{it} iterations]')
+checkpoint_io.save('model.pt', epoch_it=epoch_it, it=it, loss_val_best=metric_val_best)

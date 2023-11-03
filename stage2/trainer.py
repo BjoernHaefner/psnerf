@@ -50,7 +50,7 @@ class TrainRunner():
 
         self.expname = self.conf.get_string('train.expname')
         self.obj_name = self.conf.get_string('dataset.obj_name')
-        self.expdir = os.path.join(self.exps_folder_name, self.obj_name,self.expname)
+        self.expdir = os.path.join(self.exps_folder_name, self.obj_name,self.expname) # e.g. out/bear/test_1
         
         if kwargs['is_continue'] and kwargs['timestamp'] == 'latest':
             if os.path.exists(self.expdir):
@@ -168,30 +168,35 @@ class TrainRunner():
         if is_continue:
             old_checkpnts_dir = os.path.join(self.expdir, timestamp, 'checkpoints')
 
-            print('Loading pretrained model: ', os.path.join(old_checkpnts_dir, self.model_params_subdir, str(kwargs['checkpoint']) + ".pth"))
+            if os.path.isfile(os.path.join(old_checkpnts_dir, self.model_params_subdir, str(kwargs['checkpoint']) + ".pth")) and \
+                os.path.isfile(os.path.join(old_checkpnts_dir, self.sg_optimizer_params_subdir, str(kwargs['checkpoint']) + ".pth")) and \
+                os.path.isfile(os.path.join(old_checkpnts_dir, self.sg_scheduler_params_subdir, str(kwargs['checkpoint']) + ".pth")):
+                print('Loading pretrained model: ', os.path.join(old_checkpnts_dir, self.model_params_subdir, str(kwargs['checkpoint']) + ".pth"))
 
-            saved_model_state = torch.load(
-                os.path.join(old_checkpnts_dir, self.model_params_subdir, str(kwargs['checkpoint']) + ".pth"))
-            self.model.load_state_dict(saved_model_state["model_state_dict"])
-            self.start_epoch = saved_model_state['epoch']
+                saved_model_state = torch.load(
+                    os.path.join(old_checkpnts_dir, self.model_params_subdir, str(kwargs['checkpoint']) + ".pth"))
+                self.model.load_state_dict(saved_model_state["model_state_dict"])
+                self.start_epoch = saved_model_state['epoch']
 
-            data = torch.load(
-                os.path.join(old_checkpnts_dir, self.sg_optimizer_params_subdir, str(kwargs['checkpoint']) + ".pth"))
-            self.sg_optimizer.load_state_dict(data["optimizer_state_dict"])
+                data = torch.load(
+                    os.path.join(old_checkpnts_dir, self.sg_optimizer_params_subdir, str(kwargs['checkpoint']) + ".pth"))
+                self.sg_optimizer.load_state_dict(data["optimizer_state_dict"])
 
-            data = torch.load(
-                os.path.join(old_checkpnts_dir, self.sg_scheduler_params_subdir, str(kwargs['checkpoint']) + ".pth"))
-            self.sg_scheduler.load_state_dict(data["scheduler_state_dict"])
+                data = torch.load(
+                    os.path.join(old_checkpnts_dir, self.sg_scheduler_params_subdir, str(kwargs['checkpoint']) + ".pth"))
+                self.sg_scheduler.load_state_dict(data["scheduler_state_dict"])
 
-            if self.light_train:
-                data = torch.load(os.path.join(old_checkpnts_dir, self.optimizer_light_params_subdir, str(kwargs['checkpoint']) + ".pth"))
-                self.light_optimizer.load_state_dict(data["optimizer_light_state_dict"])
-                if self. light_decay:
-                    self.light_scheduler.load_state_dict(data["scheduler_light_state_dict"])
-                data = torch.load(os.path.join(old_checkpnts_dir, self.light_params_subdir, str(kwargs['checkpoint']) + ".pth"))
-                self.light_para.load_state_dict(data["light_state_dict"])
-                if self.light_inten_train:
-                    self.light_inten_para.load_state_dict(data["light_inten_state_dict"])
+                if self.light_train and \
+                        os.path.isfile(os.path.join(old_checkpnts_dir, self.optimizer_light_params_subdir, str(kwargs['checkpoint']) + ".pth")) and \
+                        os.path.isfile(os.path.join(old_checkpnts_dir, self.light_params_subdir, str(kwargs['checkpoint']) + ".pth")):
+                        data = torch.load(os.path.join(old_checkpnts_dir, self.optimizer_light_params_subdir, str(kwargs['checkpoint']) + ".pth"))
+                        self.light_optimizer.load_state_dict(data["optimizer_light_state_dict"])
+                        if self. light_decay:
+                            self.light_scheduler.load_state_dict(data["scheduler_light_state_dict"])
+                        data = torch.load(os.path.join(old_checkpnts_dir, self.light_params_subdir, str(kwargs['checkpoint']) + ".pth"))
+                        self.light_para.load_state_dict(data["light_state_dict"])
+                        if self.light_inten_train:
+                            self.light_inten_para.load_state_dict(data["light_inten_state_dict"])
 
 
         self.num_pixels = self.conf.get_int('train.num_pixels')

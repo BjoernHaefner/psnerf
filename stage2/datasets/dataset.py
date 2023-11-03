@@ -1,8 +1,8 @@
-import imageio
 import json
 import os
 import random
 
+import imageio
 import numpy as np
 import torch
 

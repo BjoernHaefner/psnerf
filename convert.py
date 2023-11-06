@@ -1,3 +1,4 @@
+import json
 import logging
 import shutil
 import sys
@@ -66,7 +67,8 @@ class Convert2PSNeRF:
                         rootLogger.info(f"Read PS+ambient: {img_name}")
                         imgs.append(imread(img_name).astype(np.float32) / 255.0)
                 rootLogger.info(f"Substract ambient image")
-                imgs = np.stack(imgs, axis=0) - ambient_image
+                imgs = np.stack(imgs, axis=0) - ambient_image  # [n, h, w, c]
+                height, width = imgs.shape[1:3]
                 for ii, img in enumerate(imgs, 1):
                     # psnerf data structure
                     img_out_path = join(output_path,
@@ -91,10 +93,30 @@ class Convert2PSNeRF:
                     rootLogger.info(f"cp {mask_name} {norm_mask_out_path}")
                     if not dry:
                         shutil.copy2(mask_name, norm_mask_out_path)
-
+            n_view = len(
+                self._list_files(join(dataset['path'], dataset['name'], dataset['masks']['name'])))
+            params = {
+                "obj_name": dataset['name'],
+                "n_view": n_view,
+                "imhw": [height, width],
+                "gt_normal_world": None,
+                "view_train": list(range(1, n_view + 1)),
+                "view_test": list(range(1, n_view + 1)),
+                "K": None,
+                "pose_c2w": None,
+                "light_is_same": False,
+                "light_direction": None,
+            }
             # cameras
 
             # light
+
+            # write json file params.json
+            if not isfile(norm_mask_out_path) or force:
+                rootLogger.info(f"Write: {join(output_path, dataset['name'], 'params.json')}")
+                if not dry:
+                    with open(join(output_path, dataset['name'], 'params.json'), 'w') as f:
+                        json.dump(params, f)
         return
 
     def _list_files(self, path: str):

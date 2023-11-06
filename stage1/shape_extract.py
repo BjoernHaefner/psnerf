@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+from os.path import join, realpath
 
 import imageio
 import numpy as np
@@ -42,7 +43,7 @@ parser.add_argument('--chunk', type=int, default=32000)
 parser.add_argument('--visualize', action='store_true', default=False,)
 
 args = parser.parse_args()
-cfg = dl.load_config(os.path.join(args.exp_folder,args.obj_name, args.expname, 'config.yaml'))
+cfg = dl.load_config(join(args.exp_folder,args.obj_name, args.expname, 'config.yaml'))
 os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu)
 # Fix seeds
 is_cuda = (torch.cuda.is_available() and not args.no_cuda)
@@ -56,8 +57,8 @@ model = mdl.NeuralNetwork(cfg)
 # init renderer
 renderer = mdl.Renderer(model, cfg, device=device, normal_loss=False)
 # init checkpoints and load
-out_dir = os.path.join(args.exp_folder, args.obj_name, args.expname)
-checkpoint_io = mdl.CheckpointIO(os.path.join(out_dir,'models'), model=model)
+out_dir = join(args.exp_folder, args.obj_name, args.expname)
+checkpoint_io = mdl.CheckpointIO(join(out_dir,'models'), model=model)
 
 try:
     load_dict = checkpoint_io.load(f'model_{args.load_iter}.pt' if args.load_iter else 'model.pt')
@@ -65,20 +66,20 @@ except FileExistsError:
     load_dict = dict()
 it = load_dict.get('it', 100000)
 
-test_out_path = os.path.join(args.test_out_dir, args.obj_name, f"{args.expname}_{args.load_iter if args.load_iter else it}")
+test_out_path = join(args.test_out_dir, args.obj_name, f"{args.expname}_{args.load_iter if args.load_iter else it}")
 
 for savedir in ['mask', 'points', 'normal']:
-    os.makedirs(os.path.join(test_out_path, savedir), exist_ok=True)
+    os.makedirs(join(test_out_path, savedir), exist_ok=True)
 if args.visibility:
-    os.makedirs(os.path.join(test_out_path, 'visibility'), exist_ok=True)
+    os.makedirs(join(test_out_path, 'visibility'), exist_ok=True)
 if args.visualize:
     for savedir in ['vis_mask', 'vis_points', 'vis_normal',]:
-        os.makedirs(os.path.join(test_out_path, savedir), exist_ok=True)
+        os.makedirs(join(test_out_path, savedir), exist_ok=True)
 
-f = os.path.join(test_out_path, 'config.yaml')
+f = join(test_out_path, 'config.yaml')
 with open(f, 'w') as file:
-    print(f"Write: {os.path.realpath(f)} [From: {os.path.join(out_dir, 'config.yaml')}]")
-    file.write(open(os.path.join(out_dir, 'config.yaml'), 'r').read())
+    print(f"Write: {realpath(f)} [From: {realpath(join(out_dir, 'config.yaml'))}]")
+    file.write(open(join(out_dir, 'config.yaml'), 'r').read())
 
 def process_data_dict(data):
     img = data.get('img').to(device)
@@ -91,7 +92,7 @@ def process_data_dict(data):
     return (img, mask_img, world_mat, camera_mat, scale_mat, img_idx)
 
 if args.visibility:
-    light_pred = np.load(os.path.join(test_loader.dataset.est_norm_dir,'light_direction_pred.npy'), allow_pickle=True)
+    light_pred = np.load(join(test_loader.dataset.est_norm_dir,'light_direction_pred.npy'), allow_pickle=True)
     light_pred = light_pred[test_loader.dataset.train_slt]
     light_pred = [np.einsum('ij,kj->ki',test_loader.dataset.pose0[ln,:3,:3],li).astype(np.float32) for ln,li in enumerate(light_pred)]
     light_all = [torch.tensor(lli).to(device) for lli in light_pred]
@@ -99,7 +100,7 @@ if args.visibility:
     if args.vis_plus:
         from torch_cluster import fps # had to follow: https://github.com/conda-forge/pytorch_sparse-feedstock/issues/21#issuecomment-1056418260
         vis_plus_light = {}
-        os.makedirs(os.path.join(test_out_path, 'vis_plus'), exist_ok=True)
+        os.makedirs(join(test_out_path, 'vis_plus'), exist_ok=True)
 
 for di, data in enumerate(tqdm(test_loader, ncols=120)):
     (img, mask, world_mat, camera_mat, scale_mat, img_idx) = \
@@ -146,37 +147,37 @@ for di, data in enumerate(tqdm(test_loader, ncols=120)):
         normal_all = to_numpy(to_hw(torch.cat(normal_pred, dim=1),h,w))
         points_all = to_numpy(to_hw(torch.cat(points_pred, dim=1),h,w))
 
-        print(f"Save: {os.path.join(test_out_path,'points/view_{:02d}.npy'.format(vidx_ori+1))}")
-        np.save(os.path.join(test_out_path,'points/view_{:02d}.npy'.format(vidx_ori+1)),points_all.astype(np.float32))
-        print(f"Save: {os.path.join(test_out_path,'normal/view_{:02d}.npy'.format(vidx_ori+1))}")
-        np.save(os.path.join(test_out_path,'normal/view_{:02d}.npy'.format(vidx_ori+1)),normal_all.astype(np.float32))
-        print(f"Save: {os.path.join(test_out_path,'mask/view_{:02d}.npy'.format(vidx_ori+1))}")
-        np.save(os.path.join(test_out_path,'mask/view_{:02d}.npy'.format(vidx_ori+1)),mask_all.astype(bool))
+        print(f"Save: {realpath(join(test_out_path,'points/view_{:02d}.npy'.format(vidx_ori+1)))}")
+        np.save(join(test_out_path,'points/view_{:02d}.npy'.format(vidx_ori+1)),points_all.astype(np.float32))
+        print(f"Save: {realpath(join(test_out_path,'normal/view_{:02d}.npy'.format(vidx_ori+1)))}")
+        np.save(join(test_out_path,'normal/view_{:02d}.npy'.format(vidx_ori+1)),normal_all.astype(np.float32))
+        print(f"Save: {realpath(join(test_out_path,'mask/view_{:02d}.npy'.format(vidx_ori+1)))}")
+        np.save(join(test_out_path,'mask/view_{:02d}.npy'.format(vidx_ori+1)),mask_all.astype(bool))
         if args.visualize:
-            print(f"Save: {os.path.join(test_out_path,'vis_points/view_{:02d}.png'.format(vidx_ori+1))}")
-            imageio.imwrite(os.path.join(test_out_path,'vis_points/view_{:02d}.png'.format(vidx_ori+1)),to_img(points_all/2.+0.5))
-            print(f"Save: {os.path.join(test_out_path,'vis_normal/view_{:02d}.png'.format(vidx_ori+1))}")
-            imageio.imwrite(os.path.join(test_out_path,'vis_normal/view_{:02d}.png'.format(vidx_ori+1)),to_img(normal_all/2.+0.5))
-            print(f"Save: {os.path.join(test_out_path,'vis_mask/view_{:02d}.png'.format(vidx_ori+1))}")
-            imageio.imwrite(os.path.join(test_out_path,'vis_mask/view_{:02d}.png'.format(vidx_ori+1)),to_img(mask_all))
+            print(f"Save: {realpath(join(test_out_path,'vis_points/view_{:02d}.png'.format(vidx_ori+1)))}")
+            imageio.imwrite(join(test_out_path,'vis_points/view_{:02d}.png'.format(vidx_ori+1)),to_img(points_all/2.+0.5))
+            print(f"Save: {realpath(join(test_out_path,'vis_normal/view_{:02d}.png'.format(vidx_ori+1)))}")
+            imageio.imwrite(join(test_out_path,'vis_normal/view_{:02d}.png'.format(vidx_ori+1)),to_img(normal_all/2.+0.5))
+            print(f"Save: {realpath(join(test_out_path,'vis_mask/view_{:02d}.png'.format(vidx_ori+1)))}")
+            imageio.imwrite(join(test_out_path,'vis_mask/view_{:02d}.png'.format(vidx_ori+1)),to_img(mask_all))
 
         if args.visibility:
             vis_all = to_numpy(torch.cat(vis_pred, dim=1)).reshape(ln_ori,h,w,).transpose(0,2,1)
-            print(f"Save: {os.path.join(test_out_path,'visibility/view_{:02d}.npy'.format(vidx_ori+1))}")
-            np.save(os.path.join(test_out_path,'visibility/view_{:02d}.npy'.format(vidx_ori+1)),vis_all.astype(np.float32))
+            print(f"Save: {realpath(join(test_out_path,'visibility/view_{:02d}.npy'.format(vidx_ori+1)))}")
+            np.save(join(test_out_path,'visibility/view_{:02d}.npy'.format(vidx_ori+1)),vis_all.astype(np.float32))
             if args.visualize:
                 vis_vd.append((vis_all*255).round().astype(np.uint8))
             if args.vis_plus:
                 vis_plus_all = to_numpy(torch.cat(vis_plus, dim=1)).reshape(ln_plus,h,w,).transpose(0,2,1)
-                print(f"Save: {os.path.join(test_out_path,'vis_plus/view_{:02d}.npy'.format(vidx_ori+1))}")
-                np.save(os.path.join(test_out_path,'vis_plus/view_{:02d}.npy'.format(vidx_ori+1)),vis_plus_all.astype(np.float32))
+                print(f"Save: {realpath(join(test_out_path,'vis_plus/view_{:02d}.npy'.format(vidx_ori+1)))}")
+                np.save(join(test_out_path,'vis_plus/view_{:02d}.npy'.format(vidx_ori+1)),vis_plus_all.astype(np.float32))
                 vis_plus_light[f'view_{vidx_ori+1:02d}'] = to_numpy(pos[index]).astype(np.float32).tolist()
         torch.cuda.empty_cache()
 if args.visibility and args.visualize:
     vis_vd = np.concatenate(vis_vd, axis=0)
-    print(f"Save: {os.path.join(test_out_path,'light_visibility.mp4')}")
-    imageio.mimwrite(os.path.join(test_out_path,'light_visibility.mp4'), vis_vd, fps=10, quality=8)
+    print(f"Save: {realpath(join(test_out_path,'light_visibility.mp4'))}")
+    imageio.mimwrite(join(test_out_path,'light_visibility.mp4'), vis_vd, fps=10, quality=8)
 if args.visibility and args.vis_plus:
-    with open(os.path.join(test_out_path,'vis_plus/light_dir.json'),'w') as f0:
-        print(f"Save: {os.path.join(test_out_path,'vis_plus/light_dir.json')}")
+    with open(join(test_out_path,'vis_plus/light_dir.json'),'w') as f0:
+        print(f"Save: {realpath(join(test_out_path,'vis_plus/light_dir.json'))}")
         json.dump(vis_plus_light,f0, indent=4)

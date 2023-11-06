@@ -2,6 +2,7 @@ import datetime
 import os
 import shutil
 import urllib
+from os.path import realpath
 
 import torch
 from torch.utils import model_zoo
@@ -39,7 +40,7 @@ class CheckpointIO(object):
         outdict = kwargs
         for k, v in self.module_dict.items():
             outdict[k] = v.state_dict()
-        print(f"Save: {os.path.realpath(filename)}")
+        print(f"Save: {realpath(filename)}")
         torch.save(outdict, filename)
 
     def backup_model_best(self, filename, **kwargs):

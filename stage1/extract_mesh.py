@@ -1,6 +1,7 @@
 import argparse
 import os
 import time
+from os.path import join, realpath
 
 import torch
 
@@ -68,9 +69,8 @@ try:
     except TypeError:
         mesh, stats_dict = out, {}
 
-    mesh_out_file = os.path.join(
-        test_out_path, f'mesh.{args.mesh_extension}')
-    print(f"Save: {os.path.realpath(mesh_out_file)}")
+    mesh_out_file = join(test_out_path, f'mesh.{args.mesh_extension}')
+    print(f"Save: {realpath(mesh_out_file)}")
     mesh.export(mesh_out_file)
 
 except RuntimeError:

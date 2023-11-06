@@ -70,6 +70,7 @@ try:
 
     mesh_out_file = os.path.join(
         test_out_path, f'mesh.{args.mesh_extension}')
+    print(f"Save: {os.path.realpath(mesh_out_file)}")
     mesh.export(mesh_out_file)
 
 except RuntimeError:

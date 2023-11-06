@@ -2,6 +2,7 @@ import json
 import os
 import sys
 from datetime import datetime
+from os.path import join, realpath
 
 import math
 import numpy as np
@@ -50,7 +51,7 @@ class TrainRunner():
 
         self.expname = self.conf.get_string('train.expname')
         self.obj_name = self.conf.get_string('dataset.obj_name')
-        self.expdir = os.path.join(self.exps_folder_name, self.obj_name,self.expname) # e.g. out/bear/test_1
+        self.expdir = join(self.exps_folder_name, self.obj_name,self.expname) # e.g. out/bear/test_1
         
         if kwargs['is_continue'] and kwargs['timestamp'] == 'latest':
             if os.path.exists(self.expdir):
@@ -69,23 +70,23 @@ class TrainRunner():
             is_continue = kwargs['is_continue']
 
         self.timestamp = '{:%Y_%m_%d_%H_%M_%S}'.format(datetime.now())
-        self.plots_dir = os.path.join(self.expdir, self.timestamp, 'plots')
+        self.plots_dir = join(self.expdir, self.timestamp, 'plots')
         os.makedirs(self.plots_dir, exist_ok=True)
 
         # create checkpoints dirs
-        self.checkpoints_path = os.path.join(self.expdir, self.timestamp, 'checkpoints')
+        self.checkpoints_path = join(self.expdir, self.timestamp, 'checkpoints')
         os.makedirs(self.checkpoints_path, exist_ok=True)
         self.model_params_subdir = "ModelParameters"
         self.sg_optimizer_params_subdir = "SGOptimizerParameters"
         self.sg_scheduler_params_subdir = "SGSchedulerParameters"
-        os.makedirs(os.path.join(self.checkpoints_path, self.model_params_subdir), exist_ok=True)
-        os.makedirs(os.path.join(self.checkpoints_path, self.sg_optimizer_params_subdir), exist_ok=True)
-        os.makedirs(os.path.join(self.checkpoints_path, self.sg_scheduler_params_subdir), exist_ok=True)
+        os.makedirs(join(self.checkpoints_path, self.model_params_subdir), exist_ok=True)
+        os.makedirs(join(self.checkpoints_path, self.sg_optimizer_params_subdir), exist_ok=True)
+        os.makedirs(join(self.checkpoints_path, self.sg_scheduler_params_subdir), exist_ok=True)
 
-        print('Write tensorboard to: ', os.path.join(self.expdir, self.timestamp))
-        self.writer = SummaryWriter(os.path.join(self.expdir, self.timestamp))
+        print('Write tensorboard to: ', realpath(join(self.expdir, self.timestamp)))
+        self.writer = SummaryWriter(join(self.expdir, self.timestamp))
 
-        os.system("""cp -r {0} "{1}" """.format(kwargs['conf'], os.path.join(self.expdir, self.timestamp, 'runconf.conf')))
+        os.system("""cp -r {0} "{1}" """.format(kwargs['conf'], join(self.expdir, self.timestamp, 'runconf.conf')))
 
         print('shell command : {0}'.format(' '.join(sys.argv)))
 
@@ -123,8 +124,8 @@ class TrainRunner():
         if self.light_train:
             self.optimizer_light_params_subdir = "OptimizerLightParameters"
             self.light_params_subdir = "LightParameters"
-            os.makedirs(os.path.join(self.checkpoints_path, self.optimizer_light_params_subdir),exist_ok=True)
-            os.makedirs(os.path.join(self.checkpoints_path, self.light_params_subdir),exist_ok=True)
+            os.makedirs(join(self.checkpoints_path, self.optimizer_light_params_subdir),exist_ok=True)
+            os.makedirs(join(self.checkpoints_path, self.light_params_subdir),exist_ok=True)
 
             llen = sum([len(ln) for ln in self.train_dataset.light_slt])
             if self.light_init == 'gt':
@@ -136,7 +137,7 @@ class TrainRunner():
                     estdir += '_intnorm_gt'
                 if self.train_dataset.light_is_same:
                     estdir += f'_l{self.train_dataset.train_light}'
-                self.light_pred_path = os.path.join(self.train_dataset.basedir,estdir,'light_direction_pred.npy')
+                self.light_pred_path = join(self.train_dataset.basedir,estdir,'light_direction_pred.npy')
                 assert os.path.exists(self.light_pred_path), "light directions predicted by SDPS-Net not found."
                 light_pred = np.load(self.light_pred_path, allow_pickle=True)
                 light_pred = [light_pred[vi] for vi in self.train_dataset.train_slt]
@@ -166,34 +167,34 @@ class TrainRunner():
 
         self.start_epoch = 0
         if is_continue:
-            old_checkpnts_dir = os.path.join(self.expdir, timestamp, 'checkpoints')
+            old_checkpnts_dir = join(self.expdir, timestamp, 'checkpoints')
 
-            if os.path.isfile(os.path.join(old_checkpnts_dir, self.model_params_subdir, str(kwargs['checkpoint']) + ".pth")) and \
-                os.path.isfile(os.path.join(old_checkpnts_dir, self.sg_optimizer_params_subdir, str(kwargs['checkpoint']) + ".pth")) and \
-                os.path.isfile(os.path.join(old_checkpnts_dir, self.sg_scheduler_params_subdir, str(kwargs['checkpoint']) + ".pth")):
-                print('Loading pretrained model: ', os.path.join(old_checkpnts_dir, self.model_params_subdir, str(kwargs['checkpoint']) + ".pth"))
+            if os.path.isfile(join(old_checkpnts_dir, self.model_params_subdir, str(kwargs['checkpoint']) + ".pth")) and \
+                os.path.isfile(join(old_checkpnts_dir, self.sg_optimizer_params_subdir, str(kwargs['checkpoint']) + ".pth")) and \
+                os.path.isfile(join(old_checkpnts_dir, self.sg_scheduler_params_subdir, str(kwargs['checkpoint']) + ".pth")):
+                print('Loading pretrained model: ', realpath(join(old_checkpnts_dir, self.model_params_subdir, str(kwargs['checkpoint']) + ".pth")))
 
                 saved_model_state = torch.load(
-                    os.path.join(old_checkpnts_dir, self.model_params_subdir, str(kwargs['checkpoint']) + ".pth"))
+                    join(old_checkpnts_dir, self.model_params_subdir, str(kwargs['checkpoint']) + ".pth"))
                 self.model.load_state_dict(saved_model_state["model_state_dict"])
                 self.start_epoch = saved_model_state['epoch']
 
                 data = torch.load(
-                    os.path.join(old_checkpnts_dir, self.sg_optimizer_params_subdir, str(kwargs['checkpoint']) + ".pth"))
+                    join(old_checkpnts_dir, self.sg_optimizer_params_subdir, str(kwargs['checkpoint']) + ".pth"))
                 self.sg_optimizer.load_state_dict(data["optimizer_state_dict"])
 
                 data = torch.load(
-                    os.path.join(old_checkpnts_dir, self.sg_scheduler_params_subdir, str(kwargs['checkpoint']) + ".pth"))
+                    join(old_checkpnts_dir, self.sg_scheduler_params_subdir, str(kwargs['checkpoint']) + ".pth"))
                 self.sg_scheduler.load_state_dict(data["scheduler_state_dict"])
 
                 if self.light_train and \
-                        os.path.isfile(os.path.join(old_checkpnts_dir, self.optimizer_light_params_subdir, str(kwargs['checkpoint']) + ".pth")) and \
-                        os.path.isfile(os.path.join(old_checkpnts_dir, self.light_params_subdir, str(kwargs['checkpoint']) + ".pth")):
-                        data = torch.load(os.path.join(old_checkpnts_dir, self.optimizer_light_params_subdir, str(kwargs['checkpoint']) + ".pth"))
+                        os.path.isfile(join(old_checkpnts_dir, self.optimizer_light_params_subdir, str(kwargs['checkpoint']) + ".pth")) and \
+                        os.path.isfile(join(old_checkpnts_dir, self.light_params_subdir, str(kwargs['checkpoint']) + ".pth")):
+                        data = torch.load(join(old_checkpnts_dir, self.optimizer_light_params_subdir, str(kwargs['checkpoint']) + ".pth"))
                         self.light_optimizer.load_state_dict(data["optimizer_light_state_dict"])
                         if self. light_decay:
                             self.light_scheduler.load_state_dict(data["scheduler_light_state_dict"])
-                        data = torch.load(os.path.join(old_checkpnts_dir, self.light_params_subdir, str(kwargs['checkpoint']) + ".pth"))
+                        data = torch.load(join(old_checkpnts_dir, self.light_params_subdir, str(kwargs['checkpoint']) + ".pth"))
                         self.light_para.load_state_dict(data["light_state_dict"])
                         if self.light_inten_train:
                             self.light_inten_para.load_state_dict(data["light_inten_state_dict"])
@@ -210,61 +211,61 @@ class TrainRunner():
         
         self.vis_plus = self.conf.get_bool('train.vis_plus',default=False)
         if self.vis_loss and self.vis_plus:
-            self.vis_plus_light = json.load(open(os.path.join(self.stage1_shape_path,'vis_plus/light_dir.json')))
+            self.vis_plus_light = json.load(open(join(self.stage1_shape_path,'vis_plus/light_dir.json')))
             self.vis_plus_all = {}
             for vi in self.train_dataset.train_slt:
-                self.vis_plus_all[f'view_{vi+1:02d}'] = np.load(os.path.join(self.stage1_shape_path,'vis_plus/view_{:02d}.npy'.format(vi+1)), allow_pickle=True)
+                self.vis_plus_all[f'view_{vi+1:02d}'] = np.load(join(self.stage1_shape_path,'vis_plus/view_{:02d}.npy'.format(vi+1)), allow_pickle=True)
 
     def save_checkpoints(self, epoch):
-        print(f'Save: {os.path.join(self.checkpoints_path, self.model_params_subdir, str(epoch) + ".pth")}')
+        print(f'Save: {realpath(join(self.checkpoints_path, self.model_params_subdir, str(epoch) + ".pth"))}')
         torch.save(
             {"epoch": epoch, "model_state_dict": self.model.state_dict()},
-            os.path.join(self.checkpoints_path, self.model_params_subdir, str(epoch) + ".pth"))
-        print(f'Save: {os.path.join(self.checkpoints_path, self.model_params_subdir, "latest.pth")}')
+            join(self.checkpoints_path, self.model_params_subdir, str(epoch) + ".pth"))
+        print(f'Save: {realpath(join(self.checkpoints_path, self.model_params_subdir, "latest.pth"))}')
         torch.save(
             {"epoch": epoch, "model_state_dict": self.model.state_dict()},
-            os.path.join(self.checkpoints_path, self.model_params_subdir, "latest.pth"))
+            join(self.checkpoints_path, self.model_params_subdir, "latest.pth"))
 
-        print(f'Save: {os.path.join(self.checkpoints_path, self.sg_optimizer_params_subdir, str(epoch) + ".pth")}')
+        print(f'Save: {realpath(join(self.checkpoints_path, self.sg_optimizer_params_subdir, str(epoch) + ".pth"))}')
         torch.save(
             {"epoch": epoch, "optimizer_state_dict": self.sg_optimizer.state_dict()},
-            os.path.join(self.checkpoints_path, self.sg_optimizer_params_subdir, str(epoch) + ".pth"))
-        print(f'Save: {os.path.join(self.checkpoints_path, self.sg_optimizer_params_subdir, "latest.pth")}')
+            join(self.checkpoints_path, self.sg_optimizer_params_subdir, str(epoch) + ".pth"))
+        print(f'Save: {realpath(join(self.checkpoints_path, self.sg_optimizer_params_subdir, "latest.pth"))}')
         torch.save(
             {"epoch": epoch, "optimizer_state_dict": self.sg_optimizer.state_dict()},
-            os.path.join(self.checkpoints_path, self.sg_optimizer_params_subdir, "latest.pth"))
+            join(self.checkpoints_path, self.sg_optimizer_params_subdir, "latest.pth"))
 
-        print(f'Save: {os.path.join(self.checkpoints_path, self.sg_scheduler_params_subdir, str(epoch) + ".pth")}')
+        print(f'Save: {realpath(join(self.checkpoints_path, self.sg_scheduler_params_subdir, str(epoch) + ".pth"))}')
         torch.save(
             {"epoch": epoch, "scheduler_state_dict": self.sg_scheduler.state_dict()},
-            os.path.join(self.checkpoints_path, self.sg_scheduler_params_subdir, str(epoch) + ".pth"))
-        print(f'Save: {os.path.join(self.checkpoints_path, self.sg_scheduler_params_subdir, "latest.pth")}')
+            join(self.checkpoints_path, self.sg_scheduler_params_subdir, str(epoch) + ".pth"))
+        print(f'Save: {realpath(join(self.checkpoints_path, self.sg_scheduler_params_subdir, "latest.pth"))}')
         torch.save(
             {"epoch": epoch, "scheduler_state_dict": self.sg_scheduler.state_dict()},
-            os.path.join(self.checkpoints_path, self.sg_scheduler_params_subdir, "latest.pth"))
+            join(self.checkpoints_path, self.sg_scheduler_params_subdir, "latest.pth"))
 
         if self.light_train:
-            print(f'Save: {os.path.join(self.checkpoints_path, self.optimizer_light_params_subdir, str(epoch) + ".pth")}')
+            print(f'Save: {realpath(join(self.checkpoints_path, self.optimizer_light_params_subdir, str(epoch) + ".pth"))}')
             torch.save(
                 {"epoch": epoch, "optimizer_light_state_dict": self.light_optimizer.state_dict(),
                  "scheduler_light_state_dict": self.light_scheduler.state_dict() if self.light_decay else None},
-                os.path.join(self.checkpoints_path, self.optimizer_light_params_subdir, str(epoch) + ".pth"))
-            print(f'Save: {os.path.join(self.checkpoints_path, self.optimizer_light_params_subdir, "latest.pth")}')
+                join(self.checkpoints_path, self.optimizer_light_params_subdir, str(epoch) + ".pth"))
+            print(f'Save: {realpath(join(self.checkpoints_path, self.optimizer_light_params_subdir, "latest.pth"))}')
             torch.save(
                 {"epoch": epoch, "optimizer_light_state_dict": self.light_optimizer.state_dict(),
                  "scheduler_light_state_dict": self.light_scheduler.state_dict() if self.light_decay else None},
-                os.path.join(self.checkpoints_path, self.optimizer_light_params_subdir, "latest.pth"))
+                join(self.checkpoints_path, self.optimizer_light_params_subdir, "latest.pth"))
 
-            print(f'Save: {os.path.join(self.checkpoints_path, self.light_params_subdir, str(epoch) + ".pth")}')
+            print(f'Save: {realpath(join(self.checkpoints_path, self.light_params_subdir, str(epoch) + ".pth"))}')
             torch.save(
                 {"epoch": epoch, "light_state_dict": self.light_para.state_dict(), 
                 "light_inten_state_dict": self.light_inten_para.state_dict() if self.light_inten_train else self.model.light_int},
-                os.path.join(self.checkpoints_path, self.light_params_subdir, str(epoch) + ".pth"))
-            print(f'Save: {os.path.join(self.checkpoints_path, self.light_params_subdir, "latest.pth")}')
+                join(self.checkpoints_path, self.light_params_subdir, str(epoch) + ".pth"))
+            print(f'Save: {realpath(join(self.checkpoints_path, self.light_params_subdir, "latest.pth"))}')
             torch.save(
                 {"epoch": epoch, "light_state_dict": self.light_para.state_dict(), 
                 "light_inten_state_dict": self.light_inten_para.state_dict() if self.light_inten_train else self.model.light_int},
-                os.path.join(self.checkpoints_path, self.light_params_subdir, "latest.pth"))
+                join(self.checkpoints_path, self.light_params_subdir, "latest.pth"))
 
     def mae_error(self, img1, img2, mask=None, normalize=True):
         if mask is not None:
@@ -482,19 +483,19 @@ class TrainRunner():
             # clear plot/save files
             freq_list = [xi*5 for xi in range(10)]
             for ckpt_sub in os.listdir(self.checkpoints_path):
-                ckpt_sub_dir = os.path.join(self.checkpoints_path, ckpt_sub)
+                ckpt_sub_dir = join(self.checkpoints_path, ckpt_sub)
                 fall = sorted(os.listdir(ckpt_sub_dir),key=lambda x:int(x.split('.')[0]) if x.split('.')[0]!='latest' else 0)
                 for fsub in fall[:-2]:
                     if fsub.split('.')[0] != 'latest':
                         fidx = np.ceil(int(fsub.split('.')[0])*len(self.train_dataset)/self.ckpt_freq) 
                         if fidx not in freq_list and fidx % 10 !=0:
-                            os.remove(os.path.join(ckpt_sub_dir, fsub))
+                            os.remove(join(ckpt_sub_dir, fsub))
             freq_list = [xi for xi in range(10)] + [xi*5 for xi in range(10)]
             fall = sorted(os.listdir(self.plots_dir),key=lambda x:int(x.split('.')[0].split('_')[-1]))
             for fsub in fall[:-5]:
                 pidx = int(fsub.split('.')[0].split('_')[-1])//self.plot_freq 
                 if pidx not in freq_list and pidx%10!=0:
-                    os.remove(os.path.join(self.plots_dir, fsub))
+                    os.remove(join(self.plots_dir, fsub))
 
         # Save final checkpoint
         self.save_checkpoints(epoch)

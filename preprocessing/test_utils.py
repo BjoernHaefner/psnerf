@@ -1,4 +1,5 @@
 import os
+from os.path import realpath
 
 import numpy as np
 import torch
@@ -59,21 +60,25 @@ def test(args, split, loader, models, log, epoch, recorder):
                 th, tw = sample['crop'][0], sample['crop'][1]
                 rst0[th:th+rst.shape[0], tw:tw+rst.shape[1]] = rst
                 rst = Image.fromarray(rst0)
+                print(f"Save: {realpath(rstdir)}")
                 rst.save(rstdir)
                 rstdir = os.path.join(log.args.log_dir, 'outnpy/view_%02d.npy' % out_iter)
                 norm = pred['n'].data * data['m'].data.expand_as(pred['n'].data)
                 norm = norm[0].cpu().permute(1, 2, 0).numpy()
                 norm0 = np.zeros((sample['imres'][0],sample['imres'][1],3), np.float32)
                 norm0[th:th+norm.shape[0], tw:tw+norm.shape[1]] = norm
+                print(f"Save: {realpath(rstdir)}")
                 np.save(rstdir, norm0)
 
             if stop_iters > 0 and iters >= stop_iters: break
     res = np.vstack([np.array(res), np.array(res).mean(0)])
     save_name = '%s_res.txt' % (args.suffix)
+    print(f"Save: {realpath(os.path.join(args.log_dir, split, save_name))}")
     np.savetxt(os.path.join(args.log_dir, split, save_name), res, fmt='%.2f')
     if res.ndim > 1:
         for i in range(res.shape[1]):
             save_name = '%s_%d_res.txt' % (args.suffix, i)
+            print(f"Save: {realpath(os.path.join(args.log_dir, split, save_name))}")
             np.savetxt(os.path.join(args.log_dir, split, save_name), res[:,i], fmt='%.3f')
 
     opt = {'split': split, 'epoch': epoch, 'recorder': recorder}
@@ -81,16 +86,20 @@ def test(args, split, loader, models, log, epoch, recorder):
 
     if args.light_is_same:
         light_dirs = torch.stack(light_dirs, dim=0).detach().cpu().numpy()
+        print(f"Save: {realpath(os.path.join(args.log_dir, 'light_direction_pred.npy'))}")
         np.save(os.path.join(args.log_dir, 'light_direction_pred.npy'), light_dirs)
     else:
         light_dirs = [i.detach().cpu().numpy() for i in light_dirs]
+        print(f"Save: {realpath(os.path.join(args.log_dir, 'light_direction_pred.npy'))}")
         np.save(os.path.join(args.log_dir, 'light_direction_pred.npy'), light_dirs, allow_pickle=True)
 
     if args.light_is_same:
         light_ints = torch.stack(light_ints, dim=0).detach().cpu().numpy()
+        print(f"Save: {realpath(os.path.join(args.log_dir, 'light_intensity_pred.npy'))}")
         np.save(os.path.join(args.log_dir, 'light_intensity_pred.npy'), light_ints)
     else:
         light_ints = [i.detach().cpu().numpy() for i in light_ints]
+        print(f"Save: {realpath(os.path.join(args.log_dir, 'light_intensity_pred.npy'))}")
         np.save(os.path.join(args.log_dir, 'light_intensity_pred.npy'), light_ints, allow_pickle=True)
 
 

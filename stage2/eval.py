@@ -1,4 +1,5 @@
 import os
+from os.path import realpath
 
 os.environ["OPENCV_IO_ENABLE_OPENEXR"]="1"
 import argparse
@@ -147,22 +148,23 @@ def evaluate(**kwargs):
 
     old_checkpnts_dir = os.path.join(expdir, timestamp, 'checkpoints')
     ckpt_path = os.path.join(old_checkpnts_dir, 'ModelParameters', str(kwargs['checkpoint']) + ".pth")
+    print('Load checkpoint: ', realpath(ckpt_path))
     saved_model_state = torch.load(ckpt_path)
     model.load_state_dict(saved_model_state["model_state_dict"])
-    print('Loaded checkpoint: ', ckpt_path)
     if light_train and train_all_view:
         llen = sum([len(ln) for ln in light_slt])
         light_para = torch.nn.Embedding(llen, 3, sparse=True).eval().requires_grad_(False).to(device)
+        print('Load light direction checkpoint: ', realpath(os.path.join(old_checkpnts_dir, 'LightParameters', str(kwargs['checkpoint']) + ".pth")))
         data =torch.load(os.path.join(old_checkpnts_dir, 'LightParameters', str(kwargs['checkpoint']) + ".pth"))
         light_para.load_state_dict(data["light_state_dict"])
-        print('Loaded light direction checkpoint: ', os.path.join(old_checkpnts_dir, 'LightParameters', str(kwargs['checkpoint']) + ".pth"))
         if light_inten_train:
             light_inten_para = torch.nn.Embedding(llen, 1, sparse=True).eval().requires_grad_(False).to(device)
+            print('Load light intensity checkpoint: ', realpath(os.path.join(old_checkpnts_dir, 'LightParameters', str(kwargs['checkpoint']) + ".pth")))
             data =torch.load(os.path.join(old_checkpnts_dir, 'LightParameters', str(kwargs['checkpoint']) + ".pth"))
             light_inten_para.load_state_dict(data["light_inten_state_dict"])
-            print('Loaded light intensity checkpoint: ', os.path.join(old_checkpnts_dir, 'LightParameters', str(kwargs['checkpoint']) + ".pth"))
 
     with open(os.path.join(test_out_path, 'ckpt_path.txt'), 'w') as fp:
+        print(f"Save: {realpath(os.path.join(test_out_path, 'ckpt_path.txt'))}")
         fp.write(ckpt_path + '\n')
 
     ####################################################################################################################
@@ -218,15 +220,19 @@ def evaluate(**kwargs):
             rgb_all = np.concatenate(rgb_all,0).sum(0).clip(0,1)
 
             img = Image.fromarray(to_img(tonemap_img(rgb_all)))
+            print(f"Save: {realpath(os.path.join(test_out_path,'rgb/img/view_{:02d}.png'.format(vidx_ori+1)))}")
             img.save(os.path.join(test_out_path,'rgb/img/view_{:02d}.png'.format(vidx_ori+1)))
             # visibility
             if visibility:
                 vis_all = np.concatenate(vis_all,0).mean(0)
                 img = Image.fromarray(to_img(vis_all))
+                print(f"Save: {realpath(os.path.join(test_out_path,'visibility/img/view_{:02d}.png'.format(vidx_ori+1)))}")
                 img.save(os.path.join(test_out_path,'visibility/img/view_{:02d}.png'.format(vidx_ori+1)))
             if kwargs['save_npy']:
+                print(f"Save: {realpath(os.path.join(test_out_path,'rgb/npy/view_{:02d}.npy'.format(vidx_ori+1)))}")
                 np.save(os.path.join(test_out_path,'rgb/npy/view_{:02d}.npy'.format(vidx_ori+1)), rgb_all.astype(np.float32))
                 if visibility:
+                    print(f"Save: {realpath(os.path.join(test_out_path,'visibility/npy/view_{:02d}.npy'.format(vidx_ori+1)))}")
                     np.save(os.path.join(test_out_path,'visibility/npy/view_{:02d}.npy'.format(vidx_ori+1)), vis_all.astype(np.float32))
         return
     
@@ -291,23 +297,30 @@ def evaluate(**kwargs):
             ## img
             for lli, lli_ori in enumerate(lidx_ori):
                 img = Image.fromarray(to_img(rgb_all[lli]))
+                print(f"Save: {realpath(os.path.join(test_out_path,'rgb/img/view_{:02d}/{:03d}.png'.format(vidx_ori+1,lli_ori+1)))}")
                 img.save(os.path.join(test_out_path,'rgb/img/view_{:02d}/{:03d}.png'.format(vidx_ori+1,lli_ori+1)))
             ## rough
             if render_model in ['sgbasis']:
                 for lli, lli_ori in enumerate(lidx_ori):
                     img = Image.fromarray(to_img(rough_all[lli]))
+                    print(f"Save: {realpath(os.path.join(test_out_path,'rough/img/view_{:02d}/{:03d}.png'.format(vidx_ori+1,lli_ori+1)))}")
                     img.save(os.path.join(test_out_path,'rough/img/view_{:02d}/{:03d}.png'.format(vidx_ori+1,lli_ori+1)))
             else:
                 img = Image.fromarray(to_img(rough_all))
+                print(f"Save: {realpath(os.path.join(test_out_path,'rough/img/view_{:02d}.png'.format(vidx_ori+1)))}")
                 img.save(os.path.join(test_out_path,'rough/img/view_{:02d}.png'.format(vidx_ori+1)))
             ## albedo
             albedo_all = to_numpy(model_outputs['sg_diffuse_albedo_values'].reshape(*img_res, 3))
             img = Image.fromarray(to_img(albedo_all))
+            print(f"Save: {realpath(os.path.join(test_out_path,'albedo/img/view_{:02d}.png'.format(vidx_ori+1)))}")
             img.save(os.path.join(test_out_path,'albedo/img/view_{:02d}.png'.format(vidx_ori+1)))
             
             if kwargs['save_npy']:
+                print(f"Save: {realpath(os.path.join(test_out_path,'rgb/npy/view_{:02d}.npy'.format(vidx_ori+1)))}")
                 np.save(os.path.join(test_out_path,'rgb/npy/view_{:02d}.npy'.format(vidx_ori+1)), rgb_all.astype(np.float32))
+                print(f"Save: {realpath(os.path.join(test_out_path,'rough/npy/view_{:02d}.npy'.format(vidx_ori+1)))}")
                 np.save(os.path.join(test_out_path,'rough/npy/view_{:02d}.npy'.format(vidx_ori+1)), rough_all.astype(np.float32))
+                print(f"Save: {realpath(os.path.join(test_out_path,'albedo/npy/view_{:02d}.npy'.format(vidx_ori+1)))}")
                 np.save(os.path.join(test_out_path,'albedo/npy/view_{:02d}.npy'.format(vidx_ori+1)), albedo_all.astype(np.float32))
         return
 
@@ -386,19 +399,24 @@ def evaluate(**kwargs):
         if render_model in ['sgbasis']:
             for lli, lli_ori in enumerate(lidx_ori):
                 img = Image.fromarray(to_img(rough_all[lli]))
+                print(f"Save: {realpath(os.path.join(test_out_path,'rough/img/view_{:02d}/{:03d}.png'.format(vidx_ori+1,lli_ori+1)))}")
                 img.save(os.path.join(test_out_path,'rough/img/view_{:02d}/{:03d}.png'.format(vidx_ori+1,lli_ori+1)))
         else:
             img = Image.fromarray(to_img(rough_all))
+            print(f"Save: {realpath(os.path.join(test_out_path,'rough/img/view_{:02d}.png'.format(vidx_ori+1)))}")
             img.save(os.path.join(test_out_path,'rough/img/view_{:02d}.png'.format(vidx_ori+1)))
         # normal
         normal = model_outputs['normal_values'] if not normal_mlp else model_outputs['normal_pred']
         normal = to_numpy(normal.reshape(*img_res, 3)) * rmask[...,None]
+        print(f"Save: {realpath(os.path.join(test_out_path,'normal/npy/view_{:02d}.npy'.format(vidx_ori+1)))}")
         np.save(os.path.join(test_out_path,'normal/npy/view_{:02d}.npy'.format(vidx_ori+1)), normal.astype(np.float32))
         img = Image.fromarray(to_img(normal/2.+0.5))
+        print(f"Save: {realpath(os.path.join(test_out_path,'normal/img/view_{:02d}.png'.format(vidx_ori+1)))}")
         img.save(os.path.join(test_out_path,'normal/img/view_{:02d}.png'.format(vidx_ori+1)))
         # albedo
         rgb_eval = to_numpy(model_outputs['sg_diffuse_albedo_values'].reshape(*img_res, 3)).clip(0,1)
         img = Image.fromarray(to_img(rgb_eval))
+        print(f"Save: {realpath(os.path.join(test_out_path,'albedo/img/view_{:02d}.png'.format(vidx_ori+1)))}")
         img.save(os.path.join(test_out_path,'albedo/img/view_{:02d}.png'.format(vidx_ori+1)))
         
         # visibility
@@ -406,14 +424,20 @@ def evaluate(**kwargs):
             vis_all = np.concatenate(vis_all,0).clip(0,1)
             for lli, lli_ori in enumerate(lidx_ori):
                 img = Image.fromarray(to_img(vis_all[lli]))
+                print(f"Save: {realpath(os.path.join(test_out_path,'visibility/img/view_{:02d}/{:03d}.png'.format(vidx_ori+1,lli_ori+1)))}")
                 img.save(os.path.join(test_out_path,'visibility/img/view_{:02d}/{:03d}.png'.format(vidx_ori+1,lli_ori+1)))
 
         if kwargs['save_npy']:
+            print(f"Save: {realpath(os.path.join(test_out_path,'rgb/npy/view_{:02d}.npy'.format(vidx_ori+1)))}")
             np.save(os.path.join(test_out_path,'rgb/npy/view_{:02d}.npy'.format(vidx_ori+1)), rgb_all.astype(np.float32))
+            print(f"Save: {realpath(os.path.join(test_out_path,'mask/npy/view_{:02d}.npy'.format(vidx_ori+1)))}")
             np.save(os.path.join(test_out_path,'mask/npy/view_{:02d}.npy'.format(vidx_ori+1)), rmask.astype(bool))
+            print(f"Save: {realpath(os.path.join(test_out_path,'rough/npy/view_{:02d}.npy'.format(vidx_ori+1)))}")
             np.save(os.path.join(test_out_path,'rough/npy/view_{:02d}.npy'.format(vidx_ori+1)), rough_all.astype(np.float32))
+            print(f"Save: {realpath(os.path.join(test_out_path,'albedo/npy/view_{:02d}.npy'.format(vidx_ori+1)))}")
             np.save(os.path.join(test_out_path,'albedo/npy/view_{:02d}.npy'.format(vidx_ori+1)), rgb_eval.astype(np.float32))
             if visibility:
+                print(f"Save: {realpath(os.path.join(test_out_path,'visibility/npy/view_{:02d}.npy'.format(vidx_ori+1)))}")
                 np.save(os.path.join(test_out_path,'visibility/npy/view_{:02d}.npy'.format(vidx_ori+1)), vis_all.astype(np.float32))
 
 

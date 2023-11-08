@@ -22,14 +22,14 @@ rendering:
   ray_marching_steps: 256
   occ_prob_points: 64
 dataloading:
-  obj_name: real_squirrel
-  data_dir: ../dataset/real_squirrel
+  obj_name: synthetic_dog2
+  data_dir: ../dataset/synthetic_dog2
   inten_normalize: sdps
   batchsize: 1
   n_workers: 8
 training:
   type: unisurf
-  out_dir: out/real_squirrel/test_1/
+  out_dir: out/synthetic_dog2/test_1/
   normal_loss: True
   normal_after: 1000
   normal_angle: 65

@@ -1,5 +1,6 @@
 import os
 import sys
+from os.path import join
 from subprocess import call
 from typing import List, Tuple
 
@@ -18,13 +19,17 @@ I had to follow this:
 as the original repos environment.yaml file threw the error mentioned in above issue when running stage1/shape_extract.py
 '''
 
-file_dir = os.path.dirname(os.path.realpath(sys.argv[0])) # directory where this file lies
+file_dir = os.path.dirname(os.path.realpath(sys.argv[0]))  # directory where this file lies
+
 
 def SAVE_CALL(cmd: str, args: List[str], goto: str, dry: bool = False):
-    print(f"Call: {' '.join([f'cd {os.path.join(file_dir, goto)};', cmd, *args, ';', f'cd {file_dir}'])}")
+    print(
+        f"Call: {' '.join([f'cd {os.path.join(file_dir, goto)};', cmd, *args, ';', f'cd {file_dir}'])}")
     if not dry:
         try:
-            retcode = call(" ".join([f'cd {os.path.join(file_dir, goto)};', cmd, *args, ";", f'cd {file_dir}']), shell=True)
+            retcode = call(" ".join(
+                [f'cd {os.path.join(file_dir, goto)};', cmd, *args, ";", f'cd {file_dir}']),
+                shell=True)
             if retcode < 0:
                 print("Child was terminated by signal", -retcode, file=sys.stderr)
             else:
@@ -36,12 +41,12 @@ def SAVE_CALL(cmd: str, args: List[str], goto: str, dry: bool = False):
 
 def preprocessing(obj_name: str, gpu_id: int):
     os.environ["CUDA_VISIBLE_DEVICES"] = f"{gpu_id}"
-    cmd = f"python preprocessing/test.py"
+    cmd = f"python test.py"
     args = [
-        f"--retrain preprocessing/data/models/LCNet_CVPR2019.pth.tar",
-        f"--retrain_s2 preprocessing/data/models/NENet_CVPR2019.pth.tar",
+        f"--retrain {join('data', 'models', 'LCNet_CVPR2019.pth.tar')}",
+        f"--retrain_s2 {join('data', 'models', 'NENet_CVPR2019.pth.tar')}",
         f"--benchmark UPS_Custom_Dataset",
-        f"--bm_dir dataset/{obj_name}",
+        f"--bm_dir {join('..', 'dataset', obj_name)}",
     ]
     SAVE_CALL(cmd, args, 'preprocessing')
     return
@@ -60,13 +65,14 @@ def light_avg(obj_name: str):
 
 
 def stage1(obj_name: str, gpu_id: int, calls: Tuple[str], gt_mesh: str = ""):
-    cfg = dl.load_config(f"stage1/configs/{obj_name}.yaml")
-    expfolder = cfg['training']['out_dir'].rstrip('/').split('/')[0] # "out"
-    expname = cfg['training']['out_dir'].rstrip('/').split('/')[-1] # "test_1"
+    cfg = dl.load_config(join("stage1", "configs", f"{obj_name}.yaml"))
+    expfolder = cfg['training']['out_dir'].rstrip(os.sep).split(os.sep)[0]  # "out"
+    expname = cfg['training']['out_dir'].rstrip(os.sep).split(os.sep)[-1]  # "test_1"
+
     def train():
         cmd = f"python train.py"
         args = [
-            f"configs/{obj_name}.yaml",
+            f"{join('configs', f'{obj_name}.yaml')}",
             f"--gpu {gpu_id}",
         ]
         SAVE_CALL(cmd, args, "stage1")
@@ -112,10 +118,10 @@ def stage1(obj_name: str, gpu_id: int, calls: Tuple[str], gt_mesh: str = ""):
         return
 
     def chamfer_dist():
-        cmd = f"python ../chamfer_dist.py"
+        cmd = f"python {join('..', 'chamfer_dist.py')}"
         args = [
             f"--mesh_gt {gt_mesh}",
-            f"--mesh_pred PRED_MESH_PATH", #todo: probably from previous routine extract_mesh
+            f"--mesh_pred PRED_MESH_PATH",  # todo: probably from previous routine extract_mesh
         ]
         SAVE_CALL(cmd, args, "stage1")
         return
@@ -126,21 +132,22 @@ def stage1(obj_name: str, gpu_id: int, calls: Tuple[str], gt_mesh: str = ""):
         shape_extract()
 
     if "eval" in calls:
-        eval() # todo: test
+        eval()  # todo: test
     if "extract_mesh" in calls:
         extract_mesh()
     if "chamfer_dist" in calls and os.path.isfile(gt_mesh):
-        chamfer_dist() #todo: test
+        chamfer_dist()  # todo: test
     return
 
 
 def stage2(obj_name: str, gpu_id: int, calls: Tuple[str]):
-    conf = ConfigFactory.parse_file(f"stage2/confs/{obj_name}.conf")
+    conf = ConfigFactory.parse_file(join("stage2", "confs", f"{obj_name}.conf"))
     expname = conf.get_string('train.expname')
+
     def train():
         cmd = f"python train.py"
         args = [
-            f"--conf confs/{obj_name}.conf",
+            f"--conf {join('confs', f'{obj_name}.conf')}",
             f"--gpu {gpu_id}",
             f"--is_continue",
         ]
@@ -179,12 +186,13 @@ def stage2(obj_name: str, gpu_id: int, calls: Tuple[str]):
     return
 
 
-def evaluation(obj_name: str, expname: str, test_out_dir: str):
+def evaluation(obj_name: str):
+    conf = ConfigFactory.parse_file(join('stage2', 'confs', f'{obj_name}.conf'))
+    expname = conf.get_string('train.expname')
     cmd = f"python evaluation.py"
     args = [
         f"--obj {obj_name}",
         f"--expname {expname}",
-        f"--test_out_dir {test_out_dir}",
     ]
     SAVE_CALL(cmd, args, ".")
     return
@@ -194,20 +202,18 @@ def parser():
     import argparse
     parser = argparse.ArgumentParser(prog='PS-NeRF: Quick start',
                                      description='Executes the whole PS-NeRF pipeline')
-    parser.add_argument('-n', '--obj_name', type=str, help='object name')
+    parser.add_argument('-n', '--obj_name', required=True, type=str, help='object name')
     parser.add_argument('-g', '--gpu_id', type=int, default=0, help='GPU ID')
-    parser.add_argument('-o', '--test_out_dir', type=str, help='Output directory')
-    return parser.parse_args(['-n', 'bear',
-                              '-o', 'initial_test_bear_out',
-                              ])
+    return parser.parse_args()
 
 
 def main(cli):
     # preprocessing(cli.obj_name, cli.gpu_id)
     # light_avg(cli.obj_name)
-    # stage1(cli.obj_name, cli.gpu_id, calls=("extract_mesh"))
-    stage2(cli.obj_name, cli.gpu_id, calls=("eval"))
-    # evaluation(cli.obj_name, cli.test_out_dir)
+    stage1(cli.obj_name, cli.gpu_id, calls=("train"))
+    # stage1(cli.obj_name, cli.gpu_id, calls=("shape_extract", "extract_mesh"))
+    # stage2(cli.obj_name, cli.gpu_id, calls=("eval"))
+    # evaluation(cli.obj_name)
     return
 
 

@@ -181,10 +181,9 @@ class Convert2PSNeRF:
         for vi, (scale_mat, w2c_proj) in enumerate(zip(scale_mats, w2c_projs)):
             logger.info(f"Compute K, R, t of view {vi}")
             P_w2c = (w2c_proj @ scale_mat)[:3, :4]
-            K, w2c = self.__load_K_Rt_from_P(None, P_w2c)
+            K, c2w = self.__load_K_Rt_from_P(None, P_w2c)  # will already be inverted
             Ks.append(K[:3, :3])
-            c2w_mats.append(
-                np.linalg.inv(w2c).tolist())  # invert to get camera2world matrix 4x4
+            c2w_mats.append(c2w.tolist())
         logger.info(f"Attach pose_c2w and K to params.json")
         params['pose_c2w'] = c2w_mats
         params['K'] = np.array(Ks).mean(axis=0).tolist()

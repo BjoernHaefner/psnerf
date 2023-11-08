@@ -165,8 +165,8 @@ class Convert2PSNeRF:
             "n_view": n_view,
             "imhw": [height, width],
             "gt_normal_world": None,
-            "view_train": list(range(1, n_view + 1)),
-            "view_test": list(range(1, n_view + 1)),
+            "view_train": list(range(n_view)),
+            "view_test": list(range(n_view)),
             "light_is_same": False,
         }
 
@@ -259,7 +259,7 @@ if __name__ == "__main__":
     convert = Convert2PSNeRF(path2dataset)
 
     output_path = abspath('dataset')
-    convert(output_path, dry=True)
+    convert(output_path, dry=False)
 
     logger.info(f"mv {logging_.getFilename()} {join(output_path, 'convert.log')}")
     shutil.move(logging_.getFilename(), join(output_path, 'convert.log'))

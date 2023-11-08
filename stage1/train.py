@@ -6,7 +6,8 @@ import time
 import numpy as np
 import torch
 import torch.optim as optim
-from torch.utils.tensorboard import SummaryWriter
+from torch.utils.tensorboard import \
+    SummaryWriter  # failed: resolved with 'pip install setuptools==59.5.0' (https://github.com/pytorch/pytorch/issues/69894)
 
 import dataloading as dl
 import model as mdl

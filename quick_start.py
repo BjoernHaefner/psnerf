@@ -24,16 +24,15 @@ file_dir = os.path.dirname(os.path.realpath(sys.argv[0]))  # directory where thi
 
 def SAVE_CALL(cmd: str, args: List[str], goto: str, dry: bool = False):
     print(
-        f"Call: {' '.join([f'cd {os.path.join(file_dir, goto)};', cmd, *args, ';', f'cd {file_dir}'])}")
+        f"Call: {' '.join([f'cd {os.path.join(file_dir, goto)};', cmd, *args, ';', f'cd {file_dir}'])}",
+        flush=True)
     if not dry:
         try:
             retcode = call(" ".join(
                 [f'cd {os.path.join(file_dir, goto)};', cmd, *args, ";", f'cd {file_dir}']),
                 shell=True)
-            if retcode < 0:
+            if retcode != 0:
                 print("Child was terminated by signal", -retcode, file=sys.stderr)
-            else:
-                print("Child returned", retcode, file=sys.stderr)
         except OSError as e:
             print("Execution failed:", e, file=sys.stderr)
     return

@@ -178,13 +178,18 @@ class Convert2PSNeRF:
         w2c_projs = [cameras[f'world_mat_{idx}'].astype(np.float32) for idx in range(n_view)]
         Ks = []  # intrinsics
         c2w_mats = []  # camera2world matrices
+        translations = []
         for vi, (scale_mat, w2c_proj) in enumerate(zip(scale_mats, w2c_projs)):
             logger.info(f"Compute K, R, t of view {vi}")
             P_w2c = (w2c_proj @ scale_mat)[:3, :4]
             K, c2w = self.__load_K_Rt_from_P(None, P_w2c)  # will already be inverted
             Ks.append(K[:3, :3])
             c2w_mats.append(c2w.tolist())
+            translations.append(c2w[:3, -1])  # [3]
         logger.info(f"Attach pose_c2w and K to params.json")
+        translations = np.stack(translations, axis=0)  # [n_view, 3]
+        logger.info(f"near: {min(np.linalg.norm(translations, axis=-1)) - 1}")
+        logger.info(f"far: {max(np.linalg.norm(translations, axis=-1)) + 1}")
         params['pose_c2w'] = c2w_mats
         params['K'] = np.array(Ks).mean(axis=0).tolist()
 
@@ -254,7 +259,7 @@ if __name__ == "__main__":
     convert = Convert2PSNeRF(path2dataset)
 
     output_path = abspath('dataset')
-    convert(output_path)
+    convert(output_path, dry=True)
 
     logger.info(f"mv {logging_.getFilename()} {join(output_path, 'convert.log')}")
     shutil.move(logging_.getFilename(), join(output_path, 'convert.log'))

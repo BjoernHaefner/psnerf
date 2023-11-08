@@ -11,8 +11,8 @@ rendering:
   type: unisurf
   n_max_network_queries: 64000
   white_background: True
-  near: #todo
-  far: #todo
+  near: 2.1057887077331543
+  far: 4.112649440765381
   radius: 2.0
   interval_start: 2.0
   interval_end: 0.1

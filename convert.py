@@ -11,6 +11,9 @@ import numpy as np
 from PIL import Image
 from imageio import imread
 
+'''
+cat dataset/convert.log | grep -E "near|far|Prepare"
+'''
 
 class Logging:
     rootLogger: Logger
@@ -51,6 +54,7 @@ logger = logging_.getLogger()
 
 class Convert2PSNeRF:
     '''Converts our data to the data format of PSNeRF'''
+    _radius:float = 2.0
 
     def __init__(self, path2dataset: str):
         self.path2dataset = path2dataset
@@ -59,6 +63,8 @@ class Convert2PSNeRF:
         logger.info(f'Find all datasets'.center(100, "#"))
         logger.info(f''.center(100, "#"))
         for name in sorted(listdir(self.path2dataset)):
+            if name=="hard_2_views":
+                continue
             if isdir(join(self.path2dataset, name)):
                 logger.info(f'Found dataset: {abspath(join(self.path2dataset, name))}')
                 self.datasets[name] = {'path': self.path2dataset,
@@ -164,9 +170,9 @@ class Convert2PSNeRF:
             "obj_name": dataset['name'],
             "n_view": n_view,
             "imhw": [height, width],
-            "gt_normal_world": None,
+            "gt_normal_world": True,
             "view_train": list(range(n_view)),
-            "view_test": list(range(n_view)),
+            "view_test": [0],
             "light_is_same": False,
         }
 
@@ -188,8 +194,8 @@ class Convert2PSNeRF:
             translations.append(c2w[:3, -1])  # [3]
         logger.info(f"Attach pose_c2w and K to params.json")
         translations = np.stack(translations, axis=0)  # [n_view, 3]
-        logger.info(f"near: {min(np.linalg.norm(translations, axis=-1)) - 1}")
-        logger.info(f"far: {max(np.linalg.norm(translations, axis=-1)) + 1}")
+        logger.info(f"near: {int(min(np.linalg.norm(translations, axis=-1)) - self._radius)}")
+        logger.info(f"far: {int(max(np.linalg.norm(translations, axis=-1)) + self._radius + 1)}") # + 1 is for ceiling
         params['pose_c2w'] = c2w_mats
         params['K'] = np.array(Ks).mean(axis=0).tolist()
 
@@ -201,7 +207,7 @@ class Convert2PSNeRF:
             lights_dir = lights['L_dir']  # [views, imgs, 3]
             lights_color = lights['L_color']  # [views, imgs, channels]
             lights_dir /= np.linalg.norm(lights_dir, axis=-1, keepdims=True)  # normalize
-            lights_dir *= lights_color.mean(axis=-1, keepdims=True)
+            lights_dir *= lights_color.mean(axis=-1, keepdims=True) # shape [num_views, num_imgs, 3]
             logger.info(f"Attach light_direction to params.json")
             params['light_direction'] = lights_dir.tolist()
         else:
@@ -210,7 +216,7 @@ class Convert2PSNeRF:
                 join(dataset['path'], dataset['name'], dataset['images']['name'], self._list_files(
                     join(dataset['path'], dataset['name'], dataset['images']['name']))[
                     0]))) - 1  # - 1 to neglect the ambient image
-            lights_dir = np.ones((n_view, n_imgs, 3))
+            lights_dir = np.ones((n_view, n_imgs, 3)) # shape [num_views, num_imgs, 3]
             logger.info(f"Attach dummy light_direction to params.json")
             params['light_direction'] = lights_dir.tolist()
 
@@ -259,7 +265,7 @@ if __name__ == "__main__":
     convert = Convert2PSNeRF(path2dataset)
 
     output_path = abspath('dataset')
-    convert(output_path, dry=False)
+    convert(output_path, dry=False, force=True)
 
     logger.info(f"mv {logging_.getFilename()} {join(output_path, 'convert.log')}")
     shutil.move(logging_.getFilename(), join(output_path, 'convert.log'))

@@ -11,8 +11,8 @@ rendering:
   type: unisurf
   n_max_network_queries: 64000
   white_background: True
-  near: 2.970240592956543
-  far: 5.493039608001709
+  near: 1
+  far: 7
   radius: 2.0
   interval_start: 2.0
   interval_end: 0.1
@@ -43,7 +43,7 @@ training:
   weight_decay: 0.0
   scheduler_milestones: [ 4000, 8000 ]
   scheduler_gamma: 0.5
-  visualize_every: 10000
+  visualize_every: 100
   print_every: 200
   backup_every: 10000
   checkpoint_every: 5000

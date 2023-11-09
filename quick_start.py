@@ -10,12 +10,11 @@ import stage1.dataloading as dl
 
 '''
 This script aims to simplify the process of running all steps and stages of psnerf.
-It currently only works with the bear dataset, as some minor adaptions need to be made in the config file:
-stage1/configs/{OBJ_NAME}: trainig/out_dir: {EXPFOLDER}/{OBJ_NAME}/{EXPNAME}/ [This repo expects [hardcoded] the center folder name to be always {OBJ_NAME}, and to have exactly three directories]
 
 Troubleshooting:
 I had to follow this:
     https://github.com/conda-forge/pytorch_sparse-feedstock/issues/21#issuecomment-1056418260
+    https://github.com/pytorch/pytorch/issues/69894
 as the original repos environment.yaml file threw the error mentioned in above issue when running stage1/shape_extract.py
 '''
 
@@ -217,4 +216,7 @@ def main(cli):
 
 
 if __name__ == "__main__":
+    '''
+    EG: python quick_start.py -n real_squirrel
+    '''
     main(parser())

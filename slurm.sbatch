@@ -20,6 +20,7 @@
 
 ## call to find all data sets:
 ## for f in $(find dataset -maxdepth 1 -type d -exec basename {} \; | grep -E 'real|synthetic'); do sbatch slurm.sbatch $f; done
+## sbatch slurm.sbatch real_squirrel
 echo "srun python quick_start.py -n ${1}"
 srun python quick_start.py -n $1
 

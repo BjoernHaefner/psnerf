@@ -206,17 +206,17 @@ def parser():
 
 
 def main(cli):
-    # preprocessing(cli.obj_name, cli.gpu_id)
-    # light_avg(cli.obj_name)
+    preprocessing(cli.obj_name, cli.gpu_id)
+    light_avg(cli.obj_name)
     stage1(cli.obj_name, cli.gpu_id, calls=("train"))
-    # stage1(cli.obj_name, cli.gpu_id, calls=("shape_extract", "extract_mesh"))
-    # stage2(cli.obj_name, cli.gpu_id, calls=("eval"))
+    stage1(cli.obj_name, cli.gpu_id, calls=("shape_extract", "extract_mesh"))
+    stage2(cli.obj_name, cli.gpu_id, calls=("train"))
     # evaluation(cli.obj_name)
     return
 
 
 if __name__ == "__main__":
     '''
-    EG: python quick_start.py -n real_squirrel
+    EG: python quick_start.py -n obj_name
     '''
     main(parser())
